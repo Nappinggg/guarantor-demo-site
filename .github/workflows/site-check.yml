@@ -1,0 +1,19 @@
+name: site-check
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Homepage exists and has a title
+        run: |
+          test -f index.html
+          grep -q "<title>" index.html
+      - name: Every linked local file exists
+        run: |
+          for f in $(grep -oE '(href|src)="[^":#]+"' *.html | sed -E 's/.*"(.*)"/\1/' | sort -u); do
+            test -f "$f" || { echo "missing $f"; exit 1; }
+          done
